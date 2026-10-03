@@ -1,11 +1,26 @@
 #!/bin/bash
+export PYTHONUNBUFFERED=1
 
 # 1. Packages install karo
 pip install standard-imghdr "werkzeug>=3.0.0"
 
-# 2. LOG_GROUP agar set nahi hai to default apna Admin ID daalo
-export LOG_GROUP="${LOG_GROUP:-8601489033}"
-sed -i 's/getenv("LOG_GROUP", "")/getenv("LOG_GROUP") or "8601489033"/g' config.py 2>/dev/null || true
+# 2. config.py ko crash-proof banao (khali variable par kabhi na ruke)
+python3 -c '
+import re
+with open("config.py", "r") as f:
+    code = f.read()
+
+# Har int(getenv(...)) me safe default lagao
+code = re.sub(r"int\(getenv\([\"'\''']LOG_GROUP[\"'\'''][^)]*\)\)", "int(os.getenv(\"LOG_GROUP\") or \"8601489033\")", code)
+code = re.sub(r"int\(getenv\([\"'\''']CHANNEL_ID[\"'\'''][^)]*\)\)", "int(os.getenv(\"CHANNEL_ID\") or \"0\")", code)
+code = re.sub(r"int\(getenv\([\"'\''']FREEMIUM_LIMIT[\"'\'''][^)]*\)\)", "int(os.getenv(\"FREEMIUM_LIMIT\") or \"0\")", code)
+code = re.sub(r"int\(getenv\([\"'\''']PREMIUM_LIMIT[\"'\'''][^)]*\)\)", "int(os.getenv(\"PREMIUM_LIMIT\") or \"500\")", code)
+code = "import os\n" + code
+
+with open("config.py", "w") as f:
+    f.write(code)
+print("Config patched successfully!")
+' 2>/dev/null || true
 
 # 3. Python 3.14 safe patch
 cat << 'EOF' > sitecustomize.py
@@ -40,7 +55,7 @@ cp -f __init__.py ggn/
 sed -i 's/import bot/from . import bot/g' __main__.py
 cp -f __main__.py ggn/
 
-# 7. Render ke liye fail-safe web server (zero crash)
+# 7. Render ke liye web server background me
 cat << 'EOF' > run_server.py
 import os, http.server, socketserver
 port = int(os.environ.get('PORT', 8080))
@@ -53,8 +68,18 @@ socketserver.TCPServer(("", port), Handler).serve_forever()
 EOF
 python3 run_server.py &
 
-# 8. Telegram bot start karo
-python3 -m ggn
+# 8. Check aur Telegram Bot start karo (Full Live Logs)
+echo "=== CHECKING TELEGRAM KEYS ==="
+python3 -c '
+import os
+print("BOT_TOKEN set?:", bool(os.getenv("BOT_TOKEN")))
+print("API_ID set?:", bool(os.getenv("API_ID")))
+print("API_HASH set?:", bool(os.getenv("API_HASH")))
+print("OWNER_ID set?:", bool(os.getenv("OWNER_ID")))
+'
+echo "=== STARTING TELEGRAM BOT ==="
+python3 -u -m ggn
+
 
 
 
