@@ -7,7 +7,7 @@ from telethon.sync import TelegramClient
 import uvloop
 from config import API_ID, API_HASH, BOT_TOKEN
 
-#bot = TelegramClient('premiumrepo', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+bot = TelegramClient('premiumrepo', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
 Bot = Client(
     "ggnbot",
