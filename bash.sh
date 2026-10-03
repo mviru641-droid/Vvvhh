@@ -92,7 +92,11 @@ python3 run_server.py &
 
 # 8. Telegram Bot start karo
 echo "Starting Telegram Bot..."
-python3 -u -m ggn
+until python3 -u -m ggn; do
+  echo "Bot band hua, 10 minute baad dobara try..."
+  sleep 600
+done
+
 
 
 
