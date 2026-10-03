@@ -13,4 +13,3 @@ flask
 werkzeug==2.2.2
 mutagen
 python-dotenv==1.0.0
-python==3.10.8
