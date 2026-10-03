@@ -11,7 +11,7 @@ logging.getLogger("telethon").setLevel(logging.WARNING)
 botStartTime = time.time()
 
 if __name__ == "__main__":
-    from . import bot
+    import bot
     import glob
     from pathlib import Path
     from ggn.importer import load_plugins
