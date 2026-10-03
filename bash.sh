@@ -7,15 +7,11 @@ pip install standard-imghdr
 mkdir -p ggn/assets
 
 # 3. Files ko sahi jagah copy karo
-cp -f __init__.py importer.py ggn/
+cp -f importer.py ggn/
 cp -f batch.py frontend.py functions.py generate.py login.py progress.py pyroplug.py speedtest.py start.py stats.py ggn/assets/
 touch ggn/assets/__init__.py
 
-# 4. bot aur imports theek karo
-sed -i 's/#bot = TelegramClient/bot = TelegramClient/g' ggn/__init__.py
-sed -i 's/import bot/from . import bot/g' __main__.py
-
-# 5. pkgutil aur imghdr ko theek karne wala patch
+# 4. pkgutil aur imghdr ko theek karne wala patch banao
 cat << 'EOF' > fix.py
 import importlib.util, pkgutil, sys
 if not hasattr(pkgutil, 'get_loader'):
@@ -30,12 +26,18 @@ except ImportError:
         pass
 EOF
 
-# Patch ko main file ke sabse upar jod do
+# 5. __init__.py me bot on karo aur sabse upar patch lagao
+sed -i 's/#bot = TelegramClient/bot = TelegramClient/g' __init__.py
+cat fix.py __init__.py > ggn/__init__.py
+
+# 6. __main__.py ko theek karke patch lagao
+sed -i 's/import bot/from . import bot/g' __main__.py
 cat fix.py __main__.py > ggn/__main__.py
 
-# 6. Render ko 24/7 zinda rakhne ke liye web server chalao
+# 7. Render web server chalao
 python3 app.py &
 
-# 7. Telegram bot start karo
+# 8. Telegram bot start karo
 python3 -m ggn
+
 
